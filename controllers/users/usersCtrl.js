@@ -152,6 +152,72 @@ const updateUserPasswordCtrl = expressAsyncHandler(async (req, res) => {
   }
 })
 
+//------------------------------
+//following
+//------------------------------
+
+const followingUserCtrl = expressAsyncHandler(async (req, res) => {
+  //1.Find the user you want to follow and update it's followers field
+  //2. Update the login user following field
+  const { followId } = req.body
+  const loginUserId = req.user.id
+
+  //find the target user and check if the login id exist
+  const targetUser = await User.findById(followId)
+
+  const alreadyFollowing = targetUser?.followers?.find(user => user?.toString() === loginUserId.toString())
+
+  if (alreadyFollowing) throw new Error('You have already followed this user')
+
+  //1. Find the user you want to follow and update it's followers field
+  await User.findByIdAndUpdate(
+    followId,
+    {
+      $push: { followers: loginUserId },
+      isFollowing: true
+    },
+    { new: true }
+  )
+
+  //2. Update the login user following field
+  await User.findByIdAndUpdate(
+    loginUserId,
+    {
+      $push: { following: followId }
+    },
+    { new: true }
+  )
+  res.json('You have successfully followed this user')
+})
+
+//------------------------------
+//unfollow
+//------------------------------
+
+const unfollowUserCtrl = expressAsyncHandler(async (req, res) => {
+  const { unFollowId } = req.body
+  const loginUserId = req.user.id
+
+  await User.findByIdAndUpdate(
+    unFollowId,
+    {
+      $pull: { followers: loginUserId },
+      isFollowing: false
+    },
+    { new: true }
+  )
+
+  await User.findByIdAndUpdate(
+    loginUserId,
+    {
+      $pull: { following: unFollowId }
+    },
+    { new: true }
+  )
+
+  res.json('You have successfully unfollowed this user')
+})
+
 module.exports = {
   userRegisterCtrl,
   loginUserCtrl,
@@ -160,5 +226,7 @@ module.exports = {
   fetchUserDetailsCtrl,
   userProfileCtrl,
   updateUserCtrl,
-  updateUserPasswordCtrl
+  updateUserPasswordCtrl,
+  followingUserCtrl,
+  unfollowUserCtrl
 }
