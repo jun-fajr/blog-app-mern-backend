@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "kamikillerto.vscode-colorize",
+    "mikestead.dotenv",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "oderwat.indent-rainbow",
+    "christian-kohler.path-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "aaron-bond.better-comments",
+    "tabnine.tabnine-vscode",
+    "formulahendry.auto-complete-tag",
+    "steoates.autoimport",
+    "dsznajder.es7-react-js-snippets",
+    "xabikos.javascriptsnippets",
+    "esbenp.prettier-vscode"
+  ]
+}
