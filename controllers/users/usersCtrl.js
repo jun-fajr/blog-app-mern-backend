@@ -276,7 +276,7 @@ const generateVerificationTokenCtrl = expressAsyncHandler(async (req, res) => {
     const msg = {
       to: 'rokugatsu.akatsuki@gmail.com',
       from: 'jun.fajr@gmail.com',
-      subject: 'My first Node js email sending',
+      subject: 'Verify your account',
       html: resetURL
     }
 
@@ -290,13 +290,10 @@ const generateVerificationTokenCtrl = expressAsyncHandler(async (req, res) => {
 //------------------------------
 //Account verification
 //------------------------------
-
 const accountVerificationCtrl = expressAsyncHandler(async (req, res) => {
   const { token } = req.body
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
-
   //find this user by token
-
   const userFound = await User.findOne({
     accountVerificationToken: hashedToken,
     accountVerificationTokenExpires: { $gt: new Date() }
@@ -310,7 +307,66 @@ const accountVerificationCtrl = expressAsyncHandler(async (req, res) => {
   res.json(userFound)
 })
 
+//------------------------------
+//Forget token generator
+//------------------------------
+
+const forgetPasswordToken = expressAsyncHandler(async (req, res) => {
+  //find the user by email
+  const { email } = req.body
+
+  const user = await User.findOne({ email })
+  if (!user) throw new Error('User Not Found')
+
+  try {
+    //Create token
+    const token = await user.createPasswordResetToken()
+    console.log(token)
+    await user.save()
+
+    //build your message
+    const resetURL = `If you were requested to reset your password, reset now within 10 minutes, otherwise ignore this message <a href="http://localhost:3000/reset-password/${token}">Click to Reset</a>`
+    const msg = {
+      to: email,
+      from: 'jun.fajr@gmail.com',
+      subject: 'Reset Password',
+      html: resetURL
+    }
+
+    await sgMail.send(msg)
+    res.json({
+      msg: `A verification message is successfully sent to ${user?.email}. Reset now within 10 minutes, ${resetURL}`
+    })
+  } catch (error) {
+    res.json(error)
+  }
+})
+
+//------------------------------
+//Password reset
+//------------------------------
+
+const passwordResetCtrl = expressAsyncHandler(async (req, res) => {
+  const { token, password } = req.body
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+
+  //find this user by token
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  })
+  if (!user) throw new Error('Token Expired, try again later')
+
+  //Update/change the password
+  user.password = password
+  user.passwordResetToken = undefined
+  user.passwordResetExpires = undefined
+  await user.save()
+  res.json(user)
+})
+
 module.exports = {
+  forgetPasswordToken,
   generateVerificationTokenCtrl,
   userRegisterCtrl,
   loginUserCtrl,
@@ -324,5 +380,6 @@ module.exports = {
   unfollowUserCtrl,
   blockUserCtrl,
   unBlockUserCtrl,
-  accountVerificationCtrl
+  accountVerificationCtrl,
+  passwordResetCtrl
 }

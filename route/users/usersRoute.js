@@ -13,7 +13,9 @@ const {
   blockUserCtrl,
   unBlockUserCtrl,
   generateVerificationTokenCtrl,
-  accountVerificationCtrl
+  accountVerificationCtrl,
+  forgetPasswordToken,
+  passwordResetCtrl
 } = require('../../controllers/users/usersCtrl')
 const authMiddleware = require('../../middlewares/auth/authMiddleware')
 
@@ -22,9 +24,13 @@ const userRoutes = express.Router()
 userRoutes.post('/register', userRegisterCtrl)
 userRoutes.post('/login', loginUserCtrl)
 userRoutes.get('/', authMiddleware, fetchUsersCtrl)
+// Password reset
+userRoutes.post('/forget-password-token', forgetPasswordToken)
+userRoutes.put('/reset-password', passwordResetCtrl)
 userRoutes.put('/password', authMiddleware, updateUserPasswordCtrl)
 userRoutes.put('/follow', authMiddleware, followingUserCtrl)
 userRoutes.post('/generate-verify-email-token', authMiddleware, generateVerificationTokenCtrl)
+
 userRoutes.put('/verify-account', authMiddleware, accountVerificationCtrl)
 userRoutes.put('/unfollow', authMiddleware, unfollowUserCtrl)
 userRoutes.put('/block-user/:id', authMiddleware, blockUserCtrl)
