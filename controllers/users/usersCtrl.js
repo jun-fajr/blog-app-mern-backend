@@ -4,7 +4,9 @@ const crypto = require('crypto')
 const generateToken = require('../../config/token/generateToken')
 const User = require('../../model/user/User')
 const validateMongodbId = require('../../utils/validateMongodbID')
+const cloudinaryUploadImg = require('../../utils/cloudinary')
 sgMail.setApiKey(process.env.SEND_GRID_API_KEY)
+
 //-------------------------------------
 //Register
 //-------------------------------------
@@ -274,8 +276,8 @@ const generateVerificationTokenCtrl = expressAsyncHandler(async (req, res) => {
 
     const resetURL = `If you were requested to verify your account, verify now within 10 minutes, otherwise ignore this message <a href="http://localhost:3000/verify-account/${verificationToken}">Click to verify your account</a>`
     const msg = {
-      to: 'rokugatsu.akatsuki@gmail.com',
-      from: 'jun.fajr@gmail.com',
+      to: 'ffdfd@gmail.com',
+      from: 'twentekghana@gmail.com',
       subject: 'Verify your account',
       html: resetURL
     }
@@ -328,7 +330,7 @@ const forgetPasswordToken = expressAsyncHandler(async (req, res) => {
     const resetURL = `If you were requested to reset your password, reset now within 10 minutes, otherwise ignore this message <a href="http://localhost:3000/reset-password/${token}">Click to Reset</a>`
     const msg = {
       to: email,
-      from: 'jun.fajr@gmail.com',
+      from: 'twentekghana@gmail.com',
       subject: 'Reset Password',
       html: resetURL
     }
@@ -364,8 +366,31 @@ const passwordResetCtrl = expressAsyncHandler(async (req, res) => {
   await user.save()
   res.json(user)
 })
+//------------------------------
+//Profile photo upload
+//------------------------------
+
+const profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
+  //Find the login user
+  const { _id } = req.user
+
+  //1. Get the oath to img
+  const localPath = `public/images/profile/${req.file.filename}`
+  //2.Upload to cloudinary
+  const imgUploaded = await cloudinaryUploadImg(localPath)
+
+  const foundUser = await User.findByIdAndUpdate(
+    _id,
+    {
+      profilePhoto: imgUploaded?.url
+    },
+    { new: true }
+  )
+  res.json(foundUser)
+})
 
 module.exports = {
+  profilePhotoUploadCtrl,
   forgetPasswordToken,
   generateVerificationTokenCtrl,
   userRegisterCtrl,
