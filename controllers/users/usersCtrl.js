@@ -1,5 +1,6 @@
 const expressAsyncHandler = require('express-async-handler')
 const sgMail = require('@sendgrid/mail')
+const fs = require('fs')
 const crypto = require('crypto')
 const generateToken = require('../../config/token/generateToken')
 const User = require('../../model/user/User')
@@ -386,7 +387,9 @@ const profilePhotoUploadCtrl = expressAsyncHandler(async (req, res) => {
     },
     { new: true }
   )
-  res.json(foundUser)
+  //remove the saved img
+  fs.unlinkSync(localPath)
+  res.json(imgUploaded)
 })
 
 module.exports = {
