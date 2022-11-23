@@ -1,5 +1,11 @@
 const express = require('express')
-const { createCommentCtrl, fetchAllCommentsCtrl, fetchCommentCtrl } = require('../../controllers/comments/commentCtrl')
+const {
+  createCommentCtrl,
+  fetchAllCommentsCtrl,
+  fetchCommentCtrl,
+  updateCommentCtrl,
+  deleteCommentCtrl
+} = require('../../controllers/comments/commentCtrl')
 const authMiddleware = require('../../middlewares/auth/authMiddleware')
 
 const commentRoutes = express.Router()
@@ -7,4 +13,6 @@ const commentRoutes = express.Router()
 commentRoutes.post('/', authMiddleware, createCommentCtrl)
 commentRoutes.get('/', authMiddleware, fetchAllCommentsCtrl)
 commentRoutes.get('/:id', authMiddleware, fetchCommentCtrl)
+commentRoutes.put('/:id', authMiddleware, updateCommentCtrl)
+commentRoutes.delete('/:id', authMiddleware, deleteCommentCtrl)
 module.exports = commentRoutes
